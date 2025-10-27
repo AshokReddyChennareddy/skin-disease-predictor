@@ -1,0 +1,721 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Skin Disease Prediction</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'SF Pro Display', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .phone-container {
+            width: 100%;
+            max-width: 400px;
+            background: white;
+            border-radius: 40px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+            animation: slideUp 0.6s ease-out;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(50px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .status-bar {
+            padding: 12px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 13px;
+            font-weight: 600;
+            color: #333;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .time {
+            text-align: left;
+        }
+
+        .signal-icons {
+            display: flex;
+            gap: 5px;
+            font-size: 14px;
+        }
+
+        .content {
+            padding: 30px 25px;
+            min-height: 600px;
+        }
+
+        .home-screen,
+        .result-screen {
+            display: none;
+        }
+
+        .home-screen.active,
+        .result-screen.active {
+            display: block;
+            animation: fadeIn 0.4s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+
+            to {
+                opacity: 1;
+            }
+        }
+
+        .title {
+            font-size: 24px;
+            font-weight: bold;
+            text-align: center;
+            color: #000;
+            margin-bottom: 25px;
+        }
+
+        .upload-btn {
+            width: 100%;
+            background: white;
+            border: 2px solid #615f5f;
+            border-radius: 30px;
+            padding: 14px 20px;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            transition: all 0.3s;
+            color: #333;
+        }
+
+        .upload-btn:hover {
+            background: #f9f9f9;
+            border-color: #403e3e;
+        }
+
+        .image-preview {
+            margin: 25px 0;
+            width: 100%;
+            height: 300px;
+            background: #f5f5f5;
+            border-radius: 20px;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .image-preview img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .placeholder {
+            text-align: center;
+            color: #bbb;
+        }
+
+        .placeholder-icon {
+            font-size: 60px;
+            margin-bottom: 10px;
+            opacity: 0.5;
+        }
+
+        .section-title {
+            font-size: 18px;
+            font-weight: bold;
+            color: #000;
+            margin: 20px 0 12px 0;
+        }
+
+        .prediction-box {
+            background: #fafafa;
+            border-radius: 15px;
+            padding: 18px;
+            margin-bottom: 20px;
+        }
+
+        .prediction-label {
+            font-size: 14px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 8px;
+        }
+
+        .prediction-text {
+            font-size: 13px;
+            color: #737373;
+            line-height: 1.5;
+        }
+
+        .generate-btn {
+            width: 100%;
+            background: #1c68db;
+            color: white;
+            border: none;
+            border-radius: 30px;
+            padding: 16px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-top: 10px;
+        }
+
+        .generate-btn:hover:not(:disabled) {
+            background: #1557c2;
+            transform: translateY(-2px);
+        }
+
+        .generate-btn:disabled {
+            background: #e0e0e0;
+            color: #9e9e9e;
+            cursor: not-allowed;
+        }
+
+        .status {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            margin-top: 20px;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #9e9e9e;
+        }
+
+        .status-dot.ready {
+            background: #4CAF50;
+        }
+
+        .status-text {
+            font-size: 12px;
+            color: #737373;
+        }
+
+        /* Result Screen Styles */
+        .result-header {
+            background: linear-gradient(135deg, #4A90E2 0%, #357ABD 100%);
+            margin: -30px -25px 20px -25px;
+            padding: 20px 25px;
+            color: white;
+        }
+
+        .result-title {
+            font-size: 22px;
+            font-weight: 600;
+            text-align: center;
+        }
+
+        .result-card {
+            background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+            border-radius: 15px;
+            padding: 20px;
+            text-align: center;
+            margin: 15px 0;
+        }
+
+        .card-label {
+            font-size: 14px;
+            font-weight: 600;
+            color: #555;
+            margin-bottom: 10px;
+        }
+
+        .disease-name {
+            font-size: 24px;
+            color: #0066FF;
+            font-weight: bold;
+            margin: 10px 0;
+        }
+
+        .confidence {
+            font-size: 16px;
+            color: #333;
+            margin-top: 8px;
+        }
+
+        .info-card {
+            background: white;
+            border-radius: 12px;
+            padding: 15px;
+            margin: 12px 0;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+        }
+
+        .info-card h3 {
+            font-size: 15px;
+            margin-bottom: 8px;
+            color: #333;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .info-card p {
+            font-size: 13px;
+            color: #555;
+            line-height: 1.6;
+        }
+
+        .warning-card {
+            background: #fff3cd;
+            border-radius: 12px;
+            padding: 12px;
+            margin: 15px 0;
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+        }
+
+        .warning-icon {
+            font-size: 20px;
+            flex-shrink: 0;
+        }
+
+        .warning-text {
+            font-size: 11px;
+            color: #856404;
+            line-height: 1.5;
+        }
+
+        .action-buttons {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .action-btn {
+            background: white;
+            border: 2px solid #1c68db;
+            color: #1c68db;
+            border-radius: 10px;
+            padding: 12px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .action-btn:hover {
+            background: #1c68db;
+            color: white;
+        }
+
+        .action-btn.pdf {
+            background: #ff5252;
+            border-color: #ff5252;
+            color: white;
+        }
+
+        .action-btn.pdf:hover {
+            background: #e04848;
+            border-color: #e04848;
+        }
+
+        .back-to-home-btn {
+            width: 100%;
+            background: transparent;
+            border: 2px solid #333;
+            color: #333;
+            border-radius: 30px;
+            padding: 12px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 15px;
+            margin-bottom: 10px;
+            transition: all 0.3s;
+        }
+
+        .back-to-home-btn:hover {
+            background: #f5f5f5;
+        }
+
+        .loader {
+            width: 24px;
+            height: 24px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #1c68db;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            display: inline-block;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* QR Modal */
+        .qr-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .qr-modal.active {
+            display: flex;
+        }
+
+        .qr-content {
+            background: white;
+            padding: 30px;
+            border-radius: 20px;
+            text-align: center;
+            max-width: 350px;
+            animation: zoomIn 0.3s ease-out;
+        }
+
+        @keyframes zoomIn {
+            from {
+                opacity: 0;
+                transform: scale(0.8);
+            }
+
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        .qr-content h2 {
+            margin-bottom: 15px;
+            color: #333;
+        }
+
+        .qr-content img {
+            max-width: 100%;
+            margin: 15px 0;
+            border-radius: 10px;
+        }
+
+        .close-btn {
+            background: #1c68db;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            padding: 12px 30px;
+            cursor: pointer;
+            margin-top: 15px;
+            font-size: 15px;
+            font-weight: 600;
+        }
+
+        input[type="file"] {
+            display: none;
+        }
+
+        /* Responsive */
+        @media (max-width: 480px) {
+            .phone-container {
+                border-radius: 0;
+                max-width: 100%;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="phone-container">
+        <div class="status-bar">
+            <span class="time" id="currentTime">9:41</span>
+            <span class="signal-icons">📶 🔋</span>
+        </div>
+
+        <div class="content">
+            <!-- HOME SCREEN -->
+            <div class="home-screen active" id="homeScreen">
+                <h1 class="title">Skin Disease Prediction</h1>
+
+                <input type="file" id="fileInput" accept="image/*">
+                <button class="upload-btn" onclick="document.getElementById('fileInput').click()">
+                    Upload
+                    <span style="color: #1c68db;">→</span>
+                </button>
+
+                <div class="image-preview" id="imagePreview">
+                    <div class="placeholder">
+                        <div class="placeholder-icon">📷</div>
+                        <p style="font-size: 14px;">No image selected</p>
+                    </div>
+                </div>
+
+                <h2 class="section-title">Prediction Result</h2>
+
+                <div class="prediction-box">
+                    <div class="prediction-label">Prediction</div>
+                    <div class="prediction-text" id="predictionText">
+                        No prediction yet. Upload an image to get started.
+                    </div>
+                </div>
+
+                <button class="generate-btn" id="generateBtn" disabled onclick="generateReport()">
+                    Generate Report
+                </button>
+
+                <div class="status">
+                    <div class="status-dot" id="statusDot"></div>
+                    <span class="status-text" id="statusText">Status: Waiting for image upload</span>
+                </div>
+            </div>
+
+            <!-- RESULT SCREEN -->
+            <div class="result-screen" id="resultScreen">
+                <div class="result-header">
+                    <div class="result-title">Analysis Result</div>
+                </div>
+
+                <div class="image-preview" id="resultImage"></div>
+
+                <div class="result-card">
+                    <div class="card-label">Detected Condition</div>
+                    <div class="disease-name" id="diseaseName"></div>
+                    <div class="confidence" id="confidenceText"></div>
+                </div>
+
+                <div class="info-card">
+                    <h3>ℹ️ Description</h3>
+                    <p id="description"></p>
+                </div>
+
+                <div class="info-card">
+                    <h3>🏥 Medical Advice</h3>
+                    <p id="suggestion"></p>
+                </div>
+
+                <div class="info-card">
+                    <h3>📅 Treatment Duration</h3>
+                    <p id="cureDays"></p>
+                </div>
+
+                <div class="action-buttons">
+                    <button class="action-btn" onclick="generateQR()">🔲 QR Code</button>
+                    <button class="action-btn pdf" onclick="downloadPDF()">📄 PDF</button>
+                </div>
+
+                <button class="back-to-home-btn" onclick="goBack()">⬅ Back to Home</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- QR Modal -->
+    <div class="qr-modal" id="qrModal">
+        <div class="qr-content">
+            <h2>QR Code</h2>
+            <img id="qrImage" src="" alt="QR Code">
+            <p style="color: #666; font-size: 14px;">Scan to view full report</p>
+            <button class="close-btn" onclick="closeQRModal()">Close</button>
+        </div>
+    </div>
+
+    <script>
+        let selectedFile = null;
+        let predictionData = null;
+
+        // Update time every second
+        function updateTime() {
+            const now = new Date();
+            const hours = now.getHours();
+            const minutes = now.getMinutes().toString().padStart(2, '0');
+            const timeString = `${hours}:${minutes}`;
+            document.getElementById('currentTime').textContent = timeString;
+        }
+
+        // Update time immediately and then every minute
+        updateTime();
+        setInterval(updateTime, 60000); // Update every minute
+
+        document.getElementById('fileInput').addEventListener('change', function (e) {
+            const file = e.target.files[0];
+            if (file) {
+                selectedFile = file;
+                const reader = new FileReader();
+                reader.onload = function (event) {
+                    document.getElementById('imagePreview').innerHTML =
+                        `<img src="${event.target.result}" alt="Preview">`;
+                    document.getElementById('generateBtn').disabled = false;
+                    document.getElementById('statusDot').classList.add('ready');
+                    document.getElementById('statusText').textContent = 'Status: Ready for prediction';
+
+                    // Clear previous prediction when new image is uploaded
+                    document.getElementById('predictionText').textContent =
+                        'No prediction yet. Upload an image to get started.';
+                    predictionData = null;
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
+        async function generateReport() {
+            if (!selectedFile) return;
+
+            const formData = new FormData();
+            formData.append('file', selectedFile);
+
+            const btn = document.getElementById('generateBtn');
+            btn.innerHTML = '<span class="loader"></span>';
+            btn.disabled = true;
+
+            try {
+                const response = await fetch('/predict', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    predictionData = data;
+                    showResultScreen(data);
+                } else {
+                    alert('Error: ' + (data.error || 'Prediction failed'));
+                    btn.innerHTML = 'Generate Report';
+                    btn.disabled = false;
+                }
+            } catch (error) {
+                alert('Error: ' + error.message);
+                btn.innerHTML = 'Generate Report';
+                btn.disabled = false;
+            }
+        }
+
+        function showResultScreen(data) {
+            document.getElementById('resultImage').innerHTML =
+                `<img src="data:image/jpeg;base64,${data.image}" alt="Result">`;
+            document.getElementById('diseaseName').textContent = data.disease_name;
+            document.getElementById('confidenceText').textContent =
+                `Confidence: ${(data.confidence * 100).toFixed(1)}%`;
+            document.getElementById('description').textContent = data.description;
+            document.getElementById('suggestion').textContent = data.suggestion;
+            document.getElementById('cureDays').textContent = data.cure_days;
+
+            // Update prediction text on home screen too
+            const predictionText = `Predicted: ${data.disease_name} (${(data.confidence * 100).toFixed(1)}%)`;
+            document.getElementById('predictionText').textContent = predictionText;
+
+            document.getElementById('homeScreen').classList.remove('active');
+            document.getElementById('resultScreen').classList.add('active');
+
+            document.getElementById('generateBtn').innerHTML = 'Generate Report';
+        }
+
+        function goBack() {
+            document.getElementById('resultScreen').classList.remove('active');
+            document.getElementById('homeScreen').classList.add('active');
+            document.getElementById('generateBtn').disabled = false;
+
+            // Keep the prediction displayed on home screen
+            if (predictionData) {
+                const predictionText = `Predicted: ${predictionData.disease_name} (${(predictionData.confidence * 100).toFixed(1)}%)`;
+                document.getElementById('predictionText').textContent = predictionText;
+            }
+        }
+
+        async function generateQR() {
+            if (!predictionData) return;
+
+            try {
+                const response = await fetch('/generate-qr', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        prediction: predictionData.prediction,
+                        confidence: predictionData.confidence
+                    })
+                });
+
+                const blob = await response.blob();
+                const url = URL.createObjectURL(blob);
+
+                document.getElementById('qrImage').src = url;
+                document.getElementById('qrModal').classList.add('active');
+            } catch (error) {
+                alert('Error generating QR code: ' + error.message);
+            }
+        }
+
+        function closeQRModal() {
+            document.getElementById('qrModal').classList.remove('active');
+        }
+
+        async function downloadPDF() {
+            if (!predictionData) return;
+
+            try {
+                const response = await fetch('/generate-pdf', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        prediction: predictionData.prediction,
+                        confidence: predictionData.confidence
+                    })
+                });
+
+                const blob = await response.blob();
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `skin_disease_report_${new Date().toISOString().split('T')[0]}.pdf`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+            } catch (error) {
+                alert('Error generating PDF: ' + error.message);
+            }
+        }
+
+        document.getElementById('qrModal').addEventListener('click', function (e) {
+            if (e.target === this) closeQRModal();
+        });
+    </script>
+</body>
+
+</html>
