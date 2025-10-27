@@ -240,9 +240,7 @@ def generate_pdf(disease_key, confidence):
     
     disclaimer_style = ParagraphStyle('Disclaimer', parent=styles['Normal'], 
                                      fontSize=10, textColor=colors.grey)
-    story.append(Spacer(1, 30))
-    story.append(Paragraph("Note: This is an AI-generated report. Please consult a dermatologist for professional medical advice.", 
-                          disclaimer_style))
+    
     
     doc.build(story)
     buffer.seek(0)
@@ -339,3 +337,4 @@ if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))
     print(f"✅ Model loaded. Running on port {port}")
     app.run(debug=True, host='0.0.0.0', port=port)
+
