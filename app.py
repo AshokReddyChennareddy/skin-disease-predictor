@@ -329,15 +329,13 @@ def generate_pdf_route():
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
+# Load model immediately (for both local and Render)
+print("Loading model...")
+if not load_model():
+    raise RuntimeError("❌ Failed to load model. Ensure 'pure_model.tflite' exists in the project root.")
+
+# Start the Flask app
 if __name__ == '__main__':
-    # Get port from environment variable (for Render deployment)
     port = int(os.environ.get('PORT', 5000))
-    
-    print("Loading model...")
-    if load_model():
-        print("Starting Flask server...")
-        print(f"Server will run on port: {port}")
-        print(f"Open your browser and go to: http://localhost:{port}")
-        app.run(debug=True, host='0.0.0.0', port=port)
-    else:
-        print("Failed to load model. Please check if 'pure_model.tflite' exists.")
+    print(f"✅ Model loaded. Running on port {port}")
+    app.run(debug=True, host='0.0.0.0', port=port)
