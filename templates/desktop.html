@@ -1,0 +1,649 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Skin Disease Predictor</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+            animation: slideUp 0.5s ease-out;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .header {
+            background: linear-gradient(135deg, #4A90E2 0%, #357ABD 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 32px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 16px;
+            opacity: 0.9;
+        }
+
+        .content {
+            padding: 40px;
+        }
+
+        .home-screen,
+        .result-screen {
+            display: none;
+        }
+
+        .home-screen.active,
+        .result-screen.active {
+            display: block;
+            animation: fadeIn 0.4s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+
+            to {
+                opacity: 1;
+            }
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 40px;
+            margin-top: 30px;
+        }
+
+        @media (max-width: 768px) {
+            .grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .upload-section {
+            text-align: center;
+        }
+
+        .upload-btn {
+            background: white;
+            border: 2px solid #615f5f;
+            border-radius: 30px;
+            padding: 16px 32px;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .upload-btn:hover {
+            background: #f5f5f5;
+            border-color: #403e3e;
+            transform: translateY(-2px);
+        }
+
+        .image-preview {
+            margin-top: 30px;
+            min-height: 300px;
+            background: #f5f5f5;
+            border-radius: 20px;
+            border: 2px dashed #e5e5e5;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        .image-preview img {
+            max-width: 100%;
+            max-height: 400px;
+            border-radius: 15px;
+        }
+
+        .placeholder {
+            text-align: center;
+            color: #999;
+        }
+
+        .placeholder-icon {
+            font-size: 80px;
+            margin-bottom: 15px;
+        }
+
+        .prediction-card {
+            background: #fafafa;
+            border-radius: 15px;
+            padding: 25px;
+            border: 1px solid #e5e5e5;
+        }
+
+        .prediction-card h3 {
+            font-size: 18px;
+            margin-bottom: 15px;
+            color: #2c2c2c;
+        }
+
+        .prediction-text {
+            color: #737373;
+            line-height: 1.6;
+        }
+
+        .generate-btn {
+            background: linear-gradient(135deg, #1c68db 0%, #1557c2 100%);
+            color: white;
+            border: none;
+            border-radius: 30px;
+            padding: 16px 32px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            width: 100%;
+            margin-top: 30px;
+            transition: all 0.3s;
+        }
+
+        .generate-btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(28, 104, 219, 0.3);
+        }
+
+        .generate-btn:disabled {
+            background: #e0e0e0;
+            color: #9e9e9e;
+            cursor: not-allowed;
+        }
+
+        .status {
+            text-align: center;
+            margin-top: 25px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .status-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: #9e9e9e;
+        }
+
+        .status-dot.ready {
+            background: #4CAF50;
+        }
+
+        .status-text {
+            color: #737373;
+            font-size: 14px;
+        }
+
+        .back-btn {
+            background: transparent;
+            border: 2px solid #4A90E2;
+            color: #4A90E2;
+            border-radius: 30px;
+            padding: 12px 24px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-bottom: 30px;
+            transition: all 0.3s;
+        }
+
+        .back-btn:hover {
+            background: #4A90E2;
+            color: white;
+        }
+
+        .result-card {
+            background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+            border-radius: 15px;
+            padding: 30px;
+            text-align: center;
+            margin: 20px 0;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .disease-name {
+            font-size: 28px;
+            color: #0066FF;
+            font-weight: bold;
+            margin: 15px 0;
+        }
+
+        .confidence {
+            font-size: 18px;
+            color: #333;
+            margin-top: 10px;
+        }
+
+        .info-card {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            margin: 15px 0;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .info-card h3 {
+            font-size: 18px;
+            margin-bottom: 12px;
+            color: #333;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .info-card p {
+            color: #555;
+            line-height: 1.7;
+        }
+
+        .warning-card {
+            background: #fff3cd;
+            border-radius: 12px;
+            padding: 20px;
+            margin: 20px 0;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .warning-icon {
+            font-size: 30px;
+        }
+
+        .warning-text {
+            color: #856404;
+            line-height: 1.6;
+        }
+
+        .action-buttons {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-top: 30px;
+        }
+
+        .action-btn {
+            background: white;
+            border: 2px solid #4A90E2;
+            color: #4A90E2;
+            border-radius: 12px;
+            padding: 16px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .action-btn:hover {
+            background: #4A90E2;
+            color: white;
+            transform: translateY(-2px);
+        }
+
+        .action-btn.pdf {
+            background: #4A90E2;
+            color: white;
+        }
+
+        .action-btn.pdf:hover {
+            background: #357ABD;
+        }
+
+        .loader {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #4A90E2;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        .qr-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .qr-modal.active {
+            display: flex;
+        }
+
+        .qr-content {
+            background: white;
+            padding: 30px;
+            border-radius: 20px;
+            text-align: center;
+            max-width: 400px;
+        }
+
+        .qr-content img {
+            max-width: 100%;
+            margin: 20px 0;
+        }
+
+        .close-btn {
+            background: #4A90E2;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 12px 24px;
+            cursor: pointer;
+            margin-top: 15px;
+        }
+
+        input[type="file"] {
+            display: none;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔬 Skin Disease Predictor</h1>
+            <p>AI-Powered Skin Disease Detection System</p>
+        </div>
+
+        <div class="content">
+            <!-- HOME SCREEN -->
+            <div class="home-screen active" id="homeScreen">
+                <div class="grid">
+                    <div class="upload-section">
+                        <input type="file" id="fileInput" accept="image/*">
+                        <button class="upload-btn" onclick="document.getElementById('fileInput').click()">
+                            📁 Upload Image →
+                        </button>
+
+                        <div class="image-preview" id="imagePreview">
+                            <div class="placeholder">
+                                <div class="placeholder-icon">🖼️</div>
+                                <p>No image selected</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div>
+                        <div class="prediction-card">
+                            <h3>Prediction Result</h3>
+                            <p class="prediction-text" id="predictionText">
+                                No prediction yet. Upload an image to get started.
+                            </p>
+                        </div>
+
+                        <button class="generate-btn" id="generateBtn" disabled onclick="generateReport()">
+                            Generate Report
+                        </button>
+
+                        <div class="status">
+                            <div class="status-dot" id="statusDot"></div>
+                            <span class="status-text" id="statusText">Status: Waiting for image upload</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- RESULT SCREEN -->
+            <div class="result-screen" id="resultScreen">
+                <button class="back-btn" onclick="goBack()">← Back</button>
+
+                <div class="grid">
+                    <div>
+                        <div class="image-preview" id="resultImage"></div>
+                        <div class="result-card">
+                            <p style="font-weight: 600; color: #666;">Detected Condition</p>
+                            <div class="disease-name" id="diseaseName"></div>
+                            <div class="confidence" id="confidenceText"></div>
+                        </div>
+                    </div>
+
+                    <div>
+                        <div class="info-card">
+                            <h3>ℹ️ Description</h3>
+                            <p id="description"></p>
+                        </div>
+
+                        <div class="info-card">
+                            <h3>🏥 Medical Advice</h3>
+                            <p id="suggestion"></p>
+                        </div>
+
+                        <div class="info-card">
+                            <h3>📅 Treatment Duration</h3>
+                            <p id="cureDays"></p>
+                        </div>
+
+                        <div class="warning-card">
+                            <span class="warning-icon">⚠️</span>
+                            <span class="warning-text">
+                                This is an AI-generated report. Please consult a dermatologist for professional medical
+                                advice.
+                            </span>
+                        </div>
+
+                        <div class="action-buttons">
+                            <button class="action-btn" onclick="generateQR()">🔲 QR Code</button>
+                            <button class="action-btn pdf" onclick="downloadPDF()">📄 Download PDF</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- QR Modal -->
+    <div class="qr-modal" id="qrModal">
+        <div class="qr-content">
+            <h2>QR Code</h2>
+            <img id="qrImage" src="" alt="QR Code">
+            <p>Scan to view full report</p>
+            <button class="close-btn" onclick="closeQRModal()">Close</button>
+        </div>
+    </div>
+
+    <script>
+        let selectedFile = null;
+        let predictionData = null;
+
+        // File input handler
+        document.getElementById('fileInput').addEventListener('change', function (e) {
+            const file = e.target.files[0];
+            if (file) {
+                selectedFile = file;
+                const reader = new FileReader();
+                reader.onload = function (event) {
+                    document.getElementById('imagePreview').innerHTML =
+                        `<img src="${event.target.result}" alt="Preview">`;
+                    document.getElementById('generateBtn').disabled = false;
+                    document.getElementById('statusDot').classList.add('ready');
+                    document.getElementById('statusText').textContent = 'Status: Ready for prediction';
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
+        async function generateReport() {
+            if (!selectedFile) return;
+
+            const formData = new FormData();
+            formData.append('file', selectedFile);
+
+            document.getElementById('generateBtn').innerHTML = '<div class="loader"></div>';
+            document.getElementById('generateBtn').disabled = true;
+
+            try {
+                const response = await fetch('/predict', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    predictionData = data;
+                    showResultScreen(data);
+                } else {
+                    alert('Error: ' + (data.error || 'Prediction failed'));
+                    document.getElementById('generateBtn').innerHTML = 'Generate Report';
+                    document.getElementById('generateBtn').disabled = false;
+                }
+            } catch (error) {
+                alert('Error: ' + error.message);
+                document.getElementById('generateBtn').innerHTML = 'Generate Report';
+                document.getElementById('generateBtn').disabled = false;
+            }
+        }
+
+        function showResultScreen(data) {
+            // Update result screen
+            document.getElementById('resultImage').innerHTML =
+                `<img src="data:image/jpeg;base64,${data.image}" alt="Result">`;
+            document.getElementById('diseaseName').textContent = data.disease_name;
+            document.getElementById('confidenceText').textContent =
+                `Confidence: ${(data.confidence * 100).toFixed(1)}%`;
+            document.getElementById('description').textContent = data.description;
+            document.getElementById('suggestion').textContent = data.suggestion;
+            document.getElementById('cureDays').textContent = data.cure_days;
+
+            // Switch screens
+            document.getElementById('homeScreen').classList.remove('active');
+            document.getElementById('resultScreen').classList.add('active');
+
+            // Reset button
+            document.getElementById('generateBtn').innerHTML = 'Generate Report';
+        }
+
+        function goBack() {
+            document.getElementById('resultScreen').classList.remove('active');
+            document.getElementById('homeScreen').classList.add('active');
+            document.getElementById('generateBtn').disabled = false;
+        }
+
+        async function generateQR() {
+            if (!predictionData) return;
+
+            try {
+                const response = await fetch('/generate-qr', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        prediction: predictionData.prediction,
+                        confidence: predictionData.confidence
+                    })
+                });
+
+                const blob = await response.blob();
+                const url = URL.createObjectURL(blob);
+
+                document.getElementById('qrImage').src = url;
+                document.getElementById('qrModal').classList.add('active');
+            } catch (error) {
+                alert('Error generating QR code: ' + error.message);
+            }
+        }
+
+        function closeQRModal() {
+            document.getElementById('qrModal').classList.remove('active');
+        }
+
+        async function downloadPDF() {
+            if (!predictionData) return;
+
+            try {
+                const response = await fetch('/generate-pdf', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        prediction: predictionData.prediction,
+                        confidence: predictionData.confidence
+                    })
+                });
+
+                const blob = await response.blob();
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `skin_disease_report_${new Date().toISOString().split('T')[0]}.pdf`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+            } catch (error) {
+                alert('Error generating PDF: ' + error.message);
+            }
+        }
+
+        // Close QR modal when clicking outside
+        document.getElementById('qrModal').addEventListener('click', function (e) {
+            if (e.target === this) {
+                closeQRModal();
+            }
+        });
+    </script>
+</body>
+
+</html>
