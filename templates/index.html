@@ -386,6 +386,89 @@
             }
         }
 
+        /* Upload Options Modal */
+        .upload-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .upload-modal.active {
+            display: flex;
+        }
+
+        .upload-options {
+            background: white;
+            padding: 25px;
+            border-radius: 20px;
+            max-width: 320px;
+            width: 90%;
+            animation: slideUpModal 0.3s ease-out;
+        }
+
+        @keyframes slideUpModal {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .upload-options h3 {
+            text-align: center;
+            margin-bottom: 20px;
+            color: #333;
+            font-size: 18px;
+        }
+
+        .option-btn {
+            width: 100%;
+            background: white;
+            border: 2px solid #e0e0e0;
+            border-radius: 15px;
+            padding: 18px;
+            margin-bottom: 12px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            font-size: 16px;
+            font-weight: 500;
+            color: #333;
+            transition: all 0.3s;
+        }
+
+        .option-btn:hover {
+            border-color: #1c68db;
+            background: #f0f7ff;
+        }
+
+        .option-icon {
+            font-size: 28px;
+        }
+
+        .cancel-btn {
+            width: 100%;
+            background: transparent;
+            border: none;
+            color: #999;
+            padding: 12px;
+            cursor: pointer;
+            font-size: 15px;
+            margin-top: 8px;
+        }
+
         /* QR Modal */
         .qr-modal {
             display: none;
@@ -452,6 +535,10 @@
             display: none;
         }
 
+        #cameraInput {
+            display: none;
+        }
+
         /* Responsive */
         @media (max-width: 480px) {
             .phone-container {
@@ -475,7 +562,8 @@
                 <h1 class="title">Skin Disease Prediction</h1>
 
                 <input type="file" id="fileInput" accept="image/*">
-                <button class="upload-btn" onclick="document.getElementById('fileInput').click()">
+                <input type="file" id="cameraInput" accept="image/*" capture="environment">
+                <button class="upload-btn" onclick="showUploadOptions()">
                     Upload
                     <span style="color: #1c68db;">→</span>
                 </button>
@@ -545,6 +633,22 @@
         </div>
     </div>
 
+    <!-- Upload Options Modal -->
+    <div class="upload-modal" id="uploadModal">
+        <div class="upload-options">
+            <h3>Choose Upload Method</h3>
+            <button class="option-btn" onclick="openCamera()">
+                <span class="option-icon">📷</span>
+                <span>Take Photo</span>
+            </button>
+            <button class="option-btn" onclick="openGallery()">
+                <span class="option-icon">🖼️</span>
+                <span>Choose from Gallery</span>
+            </button>
+            <button class="cancel-btn" onclick="closeUploadModal()">Cancel</button>
+        </div>
+    </div>
+
     <!-- QR Modal -->
     <div class="qr-modal" id="qrModal">
         <div class="qr-content">
@@ -570,9 +674,42 @@
 
         // Update time immediately and then every minute
         updateTime();
-        setInterval(updateTime, 60000); // Update every minute
+        setInterval(updateTime, 60000);
 
+        // Show upload options modal
+        function showUploadOptions() {
+            document.getElementById('uploadModal').classList.add('active');
+        }
+
+        // Close upload modal
+        function closeUploadModal() {
+            document.getElementById('uploadModal').classList.remove('active');
+        }
+
+        // Open camera
+        function openCamera() {
+            closeUploadModal();
+            document.getElementById('cameraInput').click();
+        }
+
+        // Open gallery
+        function openGallery() {
+            closeUploadModal();
+            document.getElementById('fileInput').click();
+        }
+
+        // Handle file selection from gallery
         document.getElementById('fileInput').addEventListener('change', function (e) {
+            handleFileSelect(e);
+        });
+
+        // Handle file selection from camera
+        document.getElementById('cameraInput').addEventListener('change', function (e) {
+            handleFileSelect(e);
+        });
+
+        // Common function to handle file selection
+        function handleFileSelect(e) {
             const file = e.target.files[0];
             if (file) {
                 selectedFile = file;
@@ -591,7 +728,7 @@
                 };
                 reader.readAsDataURL(file);
             }
-        });
+        }
 
         async function generateReport() {
             if (!selectedFile) return;
@@ -712,8 +849,13 @@
             }
         }
 
+        // Close modals when clicking outside
         document.getElementById('qrModal').addEventListener('click', function (e) {
             if (e.target === this) closeQRModal();
+        });
+
+        document.getElementById('uploadModal').addEventListener('click', function (e) {
+            if (e.target === this) closeUploadModal();
         });
     </script>
 </body>
