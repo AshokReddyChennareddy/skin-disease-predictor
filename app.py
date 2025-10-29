@@ -81,7 +81,7 @@ disease_info = {
         'cure_days': 'No treatment required',
     },
     'unknown': {
-        'name': 'Unidentified Skin Condition',
+        'name': 'Unknown Disease',
         'description': 'The model could not confidently classify the image. Possible causes include poor lighting, unclear image, or a rare condition.',
         'suggestion': 'Please consult a dermatologist for an accurate diagnosis. Professional evaluation is recommended.',
         'cure_days': 'Diagnosis and treatment duration depend on the confirmed condition',
@@ -338,5 +338,6 @@ if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))
     print(f"✅ Model loaded. Running on port {port}")
     app.run(debug=True, host='0.0.0.0', port=port)
+
 
 
