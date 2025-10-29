@@ -30,63 +30,64 @@ IMG_SIZE = 224
 TFLITE_MODEL_PATH = "pure_model.tflite"
 class_names = sorted(['nv', 'mel', 'bkl', 'bcc', 'akiec', 'normal', 'vasc', 'df'])
 
-# Disease information database
+# Disease information database (verified and refined using StatPearls, NCCN, and peer-reviewed dermatology articles)
 disease_info = {
     'akiec': {
-        'name': 'Actinic keratoses',
-        'description': 'Rough, scaly patches on the skin caused by years of sun exposure. Can develop into skin cancer if left untreated.',
-        'suggestion': 'Consult a dermatologist. Treatment options include freezing, topical medications, or laser therapy.',
-        'cure_days': '2-4 weeks with proper treatment',
+        'name': 'Actinic Keratoses',
+        'description': 'Rough, scaly patches on sun-exposed areas caused by long-term ultraviolet (UV) exposure. Considered precancerous as they can progress to squamous cell carcinoma.',
+        'suggestion': 'Consult a dermatologist. Common treatments include cryotherapy (freezing), topical agents like 5-fluorouracil or imiquimod, and photodynamic therapy.',
+        'cure_days': '2–4 weeks depending on the chosen treatment method',
     },
     'bcc': {
-        'name': 'Basal cell carcinoma',
-        'description': 'Most common type of skin cancer. Slow-growing and rarely spreads to other parts of the body.',
-        'suggestion': 'Immediate dermatologist consultation required. Surgical removal is typically recommended.',
-        'cure_days': '30-45 days after surgery or therapy',
+        'name': 'Basal Cell Carcinoma',
+        'description': 'The most common type of skin cancer. Typically appears as a pearly bump or pink patch. It grows slowly and rarely spreads but can invade local tissue.',
+        'suggestion': 'Seek immediate dermatologist consultation. Treatment options include surgical excision, Mohs surgery, or topical therapies for superficial types.',
+        'cure_days': 'Usually 30–60 days after surgery or therapy, depending on wound healing',
     },
     'bkl': {
-        'name': 'Benign keratosis-like lesions',
-        'description': 'Non-cancerous skin growths that appear as brown, black, or tan spots. Usually harmless.',
-        'suggestion': 'Monitor for changes. Visit dermatologist if it grows, bleeds, or changes color.',
-        'cure_days': 'No treatment needed unless cosmetic concern',
+        'name': 'Seborrheic Keratosis (Benign Keratosis-like Lesions)',
+        'description': 'Common non-cancerous growths that appear as brown, black, or tan plaques. Often have a waxy or stuck-on appearance and increase with age.',
+        'suggestion': 'No treatment required unless for cosmetic reasons or if irritated. Removal can be done via cryotherapy or curettage.',
+        'cure_days': 'No medical treatment required; cosmetic removal heals within 1–2 weeks',
     },
     'df': {
         'name': 'Dermatofibroma',
-        'description': 'Common benign skin growth. Appears as a small, firm bump on the skin, usually on legs.',
-        'suggestion': 'Usually harmless. Consult dermatologist only if it becomes painful or changes.',
-        'cure_days': 'No treatment required; surgical removal if desired',
+        'description': 'A common benign fibrous nodule that usually appears on the lower legs. Firm to touch and may be darker in color compared to surrounding skin.',
+        'suggestion': 'Generally harmless and needs no treatment. Dermatologist consultation advised if the lesion grows, becomes painful, or bleeds.',
+        'cure_days': 'No treatment required; excision recovery around 1–2 weeks if removed',
     },
     'mel': {
         'name': 'Melanoma',
-        'description': 'A serious type of skin cancer that develops from pigment-producing cells. Can spread to other organs if not treated early.',
-        'suggestion': 'URGENT: Consult oncologist/dermatologist immediately. Early detection is crucial for successful treatment.',
-        'cure_days': '30-90 days depending on stage and treatment plan',
+        'description': 'A dangerous type of skin cancer that arises from melanocytes (pigment cells). It can rapidly spread to other organs if not detected early.',
+        'suggestion': 'URGENT: Consult a dermatologist or oncologist immediately. Early diagnosis and excision are critical for survival.',
+        'cure_days': '30–90 days depending on cancer stage and treatment response',
     },
     'nv': {
-        'name': 'Melanocytic nevi',
-        'description': 'Common moles - usually benign growths. Most people have 10-40 moles on their body.',
-        'suggestion': 'Monitor for ABCDE signs (Asymmetry, Border, Color, Diameter, Evolution). Check every 3 months.',
-        'cure_days': 'Usually harmless; no treatment needed',
+        'name': 'Melanocytic Nevi (Common Moles)',
+        'description': 'Benign clusters of melanocytes that form moles. Usually uniform in color and shape, but changes should be monitored.',
+        'suggestion': 'Monitor using the ABCDE rule (Asymmetry, Border, Color, Diameter, Evolution). Dermatologist check-up recommended every 6–12 months.',
+        'cure_days': 'Harmless; removal only if suspicious or for cosmetic reasons',
     },
     'vasc': {
-        'name': 'Vascular lesions',
-        'description': 'Birthmarks or growths made up of blood vessels. Usually harmless but can bleed if injured.',
-        'suggestion': 'Consult dermatologist if it bleeds, grows rapidly, or causes discomfort.',
-        'cure_days': '15-30 days with laser treatment if needed',
+        'name': 'Vascular Lesions',
+        'description': 'Lesions formed by abnormal growth of blood vessels, such as hemangiomas or vascular malformations. Most are benign.',
+        'suggestion': 'Consult a dermatologist if it bleeds, grows, or affects function. Treatments may include laser therapy, medication, or observation.',
+        'cure_days': '15–45 days depending on lesion type and treatment method',
     },
     'normal': {
-        'name': 'Normal',
-        'description': 'No skin disease detected. Your skin appears healthy with no visible abnormalities.',
-        'suggestion': 'Continue regular skin care routine. Protect skin from excessive sun exposure and monitor for any changes.',
-        'cure_days': 'No treatment needed',
+        'name': 'Normal Skin',
+        'description': 'No abnormal findings detected. The skin appears healthy without any visible lesions or pigmentation disorders.',
+        'suggestion': 'Maintain a proper skincare routine, use sunscreen (SPF ≥ 30), and perform regular self-examinations for early detection of new lesions.',
+        'cure_days': 'No treatment required',
     },
     'unknown': {
-        'name': 'Unknown Disease',
-        'description': 'The AI model could not confidently identify the skin condition. This could be due to image quality, lighting, or an uncommon condition.',
-        'suggestion': 'RECOMMENDED: Please consult a dermatologist for proper diagnosis. The image may need better lighting or a clearer view of the affected area.',
-        'cure_days': 'Professional diagnosis required',
+        'name': 'Unidentified Skin Condition',
+        'description': 'The model could not confidently classify the image. Possible causes include poor lighting, unclear image, or a rare condition.',
+        'suggestion': 'Please consult a dermatologist for an accurate diagnosis. Professional evaluation is recommended.',
+        'cure_days': 'Diagnosis and treatment duration depend on the confirmed condition',
     },
 }
+
 
 # Load model
 interpreter = None
@@ -337,4 +338,5 @@ if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))
     print(f"✅ Model loaded. Running on port {port}")
     app.run(debug=True, host='0.0.0.0', port=port)
+
 
